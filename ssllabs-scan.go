@@ -19,6 +19,7 @@ package main
 
 import "crypto/tls"
 import "encoding/json"
+import "encoding/csv"
 import "flag"
 import "fmt"
 import "io/ioutil"
@@ -235,6 +236,107 @@ type LabsInfo struct {
 	EngineVersion        string
 	CriteriaVersion      string
 	ClientMaxAssessments int
+}
+
+type SSLPulse struct {
+	domainName				string
+    domainDepth				int
+    ipAddress				string
+    port					int
+    checkTime				int
+    handshakeDuration		int
+	validationDuration		int
+    requestDuration			int
+    configCheckDuration		int
+    subject					string
+    subjectCommonName		string
+    subjectCountry			string
+    altNames				string
+    altNameCount			int
+    isWildcard				bool
+    prefixSupport			bool
+    issuer					string
+    issuerCommonName		string
+    notAfter				int
+    notBefore				int
+    signatureAlg			string
+    keyAlg					string
+    keySize					int
+    validationType			string
+    isScg					int
+    revocationInfo			int
+    chainLength				int
+    chainSize 				int
+	chainIssuers			string
+    chainData				string
+    isTrusted				string
+    supports_SSL2_hello		int
+    supports_SSL_2_0		bool
+    supports_SSL_3_0		bool
+    supports_TLS_1_0		bool
+    supports_TLS_1_1		bool
+    supports_TLS_1_2		bool
+    suites					string
+    suiteCount				int
+    suitesInOrder			bool
+    supports_no_bits		bool
+    supports_low_bits		bool
+    supports_128_bits		bool
+    supports_256_bits		bool
+    em_ssl2					bool
+    em_40_bits				bool
+    em_56_bits				bool
+    em_64_bits				bool          
+    serverSignature			string
+    grade					int
+    gradeLetter				string
+    debianFlawed			string
+    sessionResumption		int
+    stsResponseHeader		string
+    renegSupport			int
+    toleranceMinorLow		int
+    toleranceMinorHigh		int
+    toleranceMajorHigh		int
+    pciReady				bool
+    fipsReady				bool
+    chainIssues				int
+    fixedChainLength		int
+    fixedChainSize			int
+    trustAnchor				string
+    engineVersion			string
+    criteriaVersion			string
+    crlUris					string
+    ocspUris				string
+    vulnBEAST				bool
+    stsMaxAge				int
+    stsIncludeSubdomains	bool
+    pkpResponseHeader		string
+    surveyId				string
+    compression 			int
+    npnSupport				bool
+    npnProtocols			string
+    sessionTickets			int
+    ocspStapling			bool
+    sniRequired				bool
+    httpStatusCode			int
+    httpForwarding			string
+    keyStrength				int
+    chainCount				int
+    chainData2				string
+    chainData3				string
+    rg2009b_grade			int
+    rg2009b_letter			string
+    beastSuites				string
+    protocolIntolerance		int
+    miscIntolerance			int
+    sims					string
+    forwardSecrecy			int
+    rc4						int
+    hasWarnings				bool
+    isExceptional			bool
+    heartbeat				bool
+    heartbleed				bool
+    cve_2014_0224			int
 }
 
 func invokeGetRepeatedly(url string) (*http.Response, []byte, error) {
@@ -604,6 +706,7 @@ func main() {
 	var conf_verbosity = flag.String("verbosity", "info", "Configure log verbosity: error, info, debug, or trace.")
 	var conf_json_pretty = flag.Bool("json-pretty", false, "Enable pretty JSON output")
 	var conf_quiet = flag.Bool("quiet", false, "Disable status messages (logging)")
+	var conf_csv = flag.Bool("csv", false, "Output results in SSL Pulse CSV format")
 
 	flag.Parse()
 
