@@ -245,6 +245,7 @@ type LabsInfo struct {
 	ClientMaxAssessments int
 }
 
+/*
 type SSLPulse struct {
 	domainName				string
     domainDepth				int
@@ -345,6 +346,7 @@ type SSLPulse struct {
     heartbleed				bool
     cve_2014_0224			int
 }
+*/
 
 func invokeGetRepeatedly(url string) (*http.Response, []byte, error) {
 	retryCount := 0
