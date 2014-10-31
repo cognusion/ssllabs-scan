@@ -852,7 +852,8 @@ func main() {
 			} else if *conf_json_flat {
 				var flattened = make(map[string]interface{})
 				
-				// We pull out each report independently, so the unmarshaller doesn't freak
+				// We pull out each report independently, so the unmarshaller 
+				// doesn't freak due to the top-level array
 				for i := range manager.results.reports {
 					results, err := json.Marshal(manager.results.reports[i])
 					if err != nil {
@@ -870,10 +871,10 @@ func main() {
 					
 					// Make a sorted index, so we can print keys in order
 					kIndex := make([]string, len(flattened))
-				    i := 0
-				    for k, _ := range flattened {
-				        kIndex[i] = k
-				        i++
+				    ki := 0
+				    for key, _ := range flattened {
+				        kIndex[ki] = key
+				        ki++
 				    }
 				    sort.Strings(kIndex)
 				    
