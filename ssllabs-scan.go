@@ -849,6 +849,7 @@ func main() {
 			} else if *conf_json_flat {
 				var flattened = make(map[string]interface{})
 				
+				// We pull out each report independently, so the unmarshaller doesn't freak
 				for i := range manager.results.reports {
 					results, err := json.Marshal(manager.results.reports[i])
 					if err != nil {
@@ -861,9 +862,21 @@ func main() {
 						log.Fatalf("[ERROR] Reconsitution of JSON failed: %v", err)
 					}
 	
+					// Flatten the JSON structure, recursively
 					flattenJSON(mappedJSON, "", &flattened)
-					for key, value := range flattened {
-						fmt.Printf("\"%v\": %v\n", key, value)
+					
+					// Make a sorted index, so we can print keys in order
+					kIndex := make([]string, len(flattened))
+				    i := 0
+				    for k, _ := range flattened {
+				        kIndex[i] = k
+				        i++
+				    }
+				    sort.Strings(kIndex)
+				    
+				    // Print the flattened data
+					for _, value := range kIndex {
+						fmt.Printf("\"%v\": %v\n", value, flattened[value])
 					}
 				}
 			} else if *conf_rawoutput {
