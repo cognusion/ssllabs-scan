@@ -609,7 +609,7 @@ func (manager *Manager) startAssessment(h string) {
 
 func (manager *Manager) run() {
 	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	httpClient = &http.Client{Transport: transport}
@@ -750,6 +750,36 @@ func flattenJSON(inputJSON map[string]interface{}, rootKey string, flattened *ma
 	}
 }
 
+func flattenAndFormatJSON(inputJSON []byte) (*[]string) {
+	var flattened = make(map[string]interface{})
+	
+	mappedJSON := map[string]interface{}{}
+	err := json.Unmarshal(inputJSON, &mappedJSON)
+	if err != nil {
+		log.Fatalf("[ERROR] Reconsitution of JSON failed: %v", err)
+	}
+
+	// Flatten the JSON structure, recursively
+	flattenJSON(mappedJSON, "", &flattened)
+	
+	// Make a sorted index, so we can print keys in order
+	kIndex := make([]string, len(flattened))
+    ki := 0
+    for key, _ := range flattened {
+        kIndex[ki] = key
+        ki++
+    }
+    sort.Strings(kIndex)
+    
+    // Ordered flattened data
+    var flatStrings []string
+	for _, value := range kIndex {
+		flatStrings = append(flatStrings,fmt.Sprintf("\"%v\": %v\n", value, flattened[value]))
+	}
+	return &flatStrings
+}
+
+
 func readLines(path *string) ([]string, error) {
 	file, err := os.Open(*path)
 	if err != nil {
@@ -849,40 +879,32 @@ func main() {
 			if *conf_json_pretty {
 				// Pretty JSON output
 				results, err = json.MarshalIndent(manager.results.reports, "", "    ")
-			} else if *conf_json_flat {
-				var flattened = make(map[string]interface{})
-				
-				// We pull out each report independently, so the unmarshaller 
-				// doesn't freak due to the top-level array
+			} else if *conf_json_flat && !*conf_rawoutput {
+				// Flat JSON, but not RAW
+
 				for i := range manager.results.reports {
 					results, err := json.Marshal(manager.results.reports[i])
 					if err != nil {
 						log.Fatalf("[ERROR] Output to JSON failed: %v", err)
 					}
 				
-					mappedJSON := map[string]interface{}{}
-					err = json.Unmarshal(results, &mappedJSON)
-					if err != nil {
-						log.Fatalf("[ERROR] Reconsitution of JSON failed: %v", err)
-					}
-	
-					// Flatten the JSON structure, recursively
-					flattenJSON(mappedJSON, "", &flattened)
-					
-					// Make a sorted index, so we can print keys in order
-					kIndex := make([]string, len(flattened))
-				    ki := 0
-				    for key, _ := range flattened {
-				        kIndex[ki] = key
-				        ki++
-				    }
-				    sort.Strings(kIndex)
+					flattened := flattenAndFormatJSON(results)
 				    
 				    // Print the flattened data
-					for _, value := range kIndex {
-						fmt.Printf("\"%v\": %v\n", value, flattened[value])
-					}
+					fmt.Println(*flattened)
 				}
+			} else if *conf_json_flat && *conf_rawoutput {
+				// Flat JSON and RAW
+
+				for i := range manager.results.responses {
+					results := []byte(manager.results.responses[i])
+					
+					flattened := flattenAndFormatJSON(results)
+				    
+				    // Print the flattened data
+					fmt.Println(*flattened)
+				}
+				
 			} else if *conf_rawoutput {
 				// Raw (non-Go-mangled) JSON output
 				fmt.Println(manager.results.responses)
